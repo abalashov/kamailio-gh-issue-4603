@@ -27,7 +27,7 @@ Then, in a separate window:
 ```
 $ while : ; do 
   sleep 0.1;
-  sipsak -T -H 127.0.0.1 -p 127.0.0.1 -s sip:s@sip-proxy 2>/dev/null; 
+  sipsak -T -H 127.0.0.1 -p 127.0.0.1 -s sip:s@sip-proxy; 
 done
 ```
 
