@@ -56,7 +56,9 @@ RUN apt-get -y update && \
     libcurl4-openssl-dev \
     libevent-2.1-7t64 \
     libjson-c5 \
-    libev4t64 && \
+    libev4t64 \
+    gdb \
+    strace && \
     mkdir -p /etc/kamailio/
 
 COPY    --from=builder /sbin/kamailio /sbin
