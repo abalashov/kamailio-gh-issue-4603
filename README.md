@@ -10,6 +10,10 @@ This demonstration works by sending an 8 kB payload out via EVAPI in response to
 
 For simplicity, Kamailio has been limited to a single UDP SIP worker and a single EVAPI dispatcher process.
 
+## Live illustration
+
+![Live illustration of write stall](demo.gif)
+
 ## Dependencies
 
 SIP Swiss Army Knife (`sipsak`), easily obtained from various sources and package managers. This is needed to send `OPTIONS` requests easily from the command line.
