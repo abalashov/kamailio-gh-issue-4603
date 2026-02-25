@@ -1,0 +1,16 @@
+services:
+  sip-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile.kamailio
+    image: kamailio-gh-issue-6403
+    hostname: sip-proxy
+    ports:
+      - "5060:5060/udp"
+      - "8787:8787/tcp"
+
+  evapi-client:
+    build:
+      context: .
+      dockerfile: Dockerfile.evapi-client
+    image: evapi-client-gh-issue-6403

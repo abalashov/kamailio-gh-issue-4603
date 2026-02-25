@@ -1,0 +1,8 @@
+FROM docker.io/library/golang:1.26-trixie
+
+RUN mkdir -p /import
+COPY ./evapi-client /import/evapi-client/
+WORKDIR /import/evapi-client/
+RUN go build -o main
+
+ENTRYPOINT ["/import/evapi-client/main"]

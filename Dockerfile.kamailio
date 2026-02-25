@@ -1,0 +1,72 @@
+FROM docker.io/library/debian:trixie-slim AS builder
+ENV kamailio_major_ver=6.1
+
+RUN apt-get -y update && \
+    apt-get -y dist-upgrade && \
+    apt-get -y install --no-install-recommends \
+    ca-certificates \
+    wget \
+    gcc \
+    g++ \
+    make \
+    cmake \
+    libc6-dev \
+    bison \
+    flex \
+    git \
+    pkg-config \
+    libpcre2-dev \
+    libssl-dev \
+    libevent-dev \
+    libjansson-dev \
+    libunistring-dev \
+    libcurl4-openssl-dev \
+    libev-dev \
+    libjson-c-dev \
+    libhiredis-dev \
+    zlib1g-dev
+
+RUN mkdir -p /usr/src && \
+    cd /usr/src && \
+    git clone https://github.com/kamailio/kamailio && \
+    cd kamailio && \
+    git checkout ${kamailio_major_ver} && \
+    cmake -S . -B build -G "Unix Makefiles" \
+    -DCMAKE_INSTALL_PREFIX=/ \
+    -DINCLUDE_MODULES='evapi' \
+    -DEXCLUDE_MODULES="acc ndb_redis http_async_client json acc_diameter app_jsdt app_sqlang auth_diameter auth_xkeys avpops benchmark blst call_control call_obj carrierroute cfgt cfg_db db2_ops debugger dmq dmq_usrloc enum evrexec file_out db_cluster db_flatstore db_text diversion dlgs domainpolicy drouting group jansson tls websocket cfg_rpc uac topos topos_redis imc influxdbc lrkproxy mangler matrix mediaproxy misctest mohqueue msilo msrp mtree nosip p_usrloc pdb pdt pike posops prefix_route print print_lib pvheaders pvtpl qos ratelimit registrar rtjson rtpproxy sca seas secfilter sipcapture sipdump sipjson siprepo sipt siptrace sms smsops speeddial ss7ops sst statsc statsd stun timer tmrec tsilo topoh uac_redirect uid_auth_db uid_avp_db uid_domain uid_gflags uid_uri_db uri_db userblocklist usrloc xhttp_prom xhttp_rpc" \
+    -DBUILD_DOC=OFF \
+    -DVERBOSE=off \
+    -DUSE_TLS=ON && \
+    cmake --build build -j $(nproc) && \
+    cmake --install build && \
+    cd / && \
+    rm -rf /usr/src/kamailio && \
+    rm -rf /var/lib/apt/lists/*
+
+FROM docker.io/library/debian:trixie-slim
+RUN apt-get -y update && \
+    apt-get -y upgrade && \
+    apt-get -y install --no-install-recommends \
+    ca-certificates \
+    libunistring5 \
+    libhiredis1.1.0 \
+    libjansson4 \
+    iproute2 \
+    libcurl4-openssl-dev \
+    libevent-2.1-7t64 \
+    libjson-c5 \
+    libev4t64 && \
+    mkdir -p /etc/kamailio/
+
+COPY    --from=builder /sbin/kamailio /sbin
+COPY    --from=builder /sbin/kamcmd /sbin
+COPY    --from=builder /etc/kamailio /etc/kamailio
+COPY    --from=builder /lib/kamailio /lib/kamailio
+
+COPY    kamailio.cfg /etc/kamailio/
+COPY    payload.cfg /etc/kamailio/
+COPY    entrypoint.sh /
+
+WORKDIR /etc/kamailio
+ENTRYPOINT ["/entrypoint.sh"]
